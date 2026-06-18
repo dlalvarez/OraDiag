@@ -1,0 +1,11 @@
+[project]
+name = "oradiag"
+version = "0.0.0"
+description = "Framework documental inicial para diagnóstico y RCA asistido de incidentes Oracle."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
