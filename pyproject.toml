@@ -3,9 +3,24 @@ name = "oradiag"
 version = "0.0.0"
 description = "Framework documental inicial para diagnóstico y RCA asistido de incidentes Oracle."
 readme = "README.md"
-requires-python = ">=3.11"
-dependencies = []
+requires-python = ">=3.12"
+dependencies = [
+    "PyYAML==6.0.3",
+    "pydantic==2.13.4",
+    "typer==0.26.8",
+]
+
+[project.scripts]
+oradiag = "oradiag.cli.app:app"
+
+[dependency-groups]
+dev = [
+    "pytest==9.1.1",
+]
 
 [build-system]
 requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
