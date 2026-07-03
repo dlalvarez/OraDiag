@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
 from pydantic import ValidationError
@@ -22,6 +21,7 @@ from oradiag.providers import (
     FixtureYAMLError,
 )
 from oradiag.rca import RCAEngine
+from oradiag.reports import render_console_report, render_json_report
 
 app = typer.Typer(
     help="OraDiag: diagnostico RCA de incidentes Oracle basado en evidencia.",
@@ -32,49 +32,6 @@ app = typer.Typer(
 @app.callback()
 def main() -> None:
     """CLI de OraDiag."""
-
-
-def _primary_finding(result: DiagnosticResult) -> DiagnosticFinding | None:
-    primary_id = result.assessment.primary_cause_id
-    if primary_id is None:
-        return None
-    return next((finding for finding in result.findings if finding.id == primary_id), None)
-
-
-def _render_json(result: DiagnosticResult) -> str:
-    return json.dumps(
-        result.model_dump(mode="json"),
-        ensure_ascii=False,
-        indent=2,
-        sort_keys=True,
-    )
-
-
-def _render_console(result: DiagnosticResult) -> str:
-    primary = _primary_finding(result)
-    lines = [
-        f"Escenario: {result.scenario.id}",
-        f"Estado: {result.assessment.status}",
-        f"Dominio: {result.assessment.domain}",
-        f"Confianza: {result.assessment.confidence}",
-    ]
-    if primary is None:
-        lines.append("Causa primaria: no determinada")
-    else:
-        lines.append(f"Causa primaria: {primary.title}")
-        lines.append(f"Descripcion: {primary.description}")
-
-    if result.limitations:
-        lines.append("Limitaciones:")
-        lines.extend(f"- {limitation.scope}: {limitation.message}" for limitation in result.limitations)
-
-    lines.append("Recomendaciones:")
-    lines.extend(f"- {recommendation.title}: {recommendation.description}" for recommendation in result.recommendations)
-
-    if result.insufficient_evidence:
-        lines.append("Advertencia: evidencia insuficiente para confirmar causa probable principal.")
-
-    return "\n".join(lines)
 
 
 @app.command("run")
@@ -101,9 +58,9 @@ def run(
         result = RCAEngine().evaluate(evidence)
 
         if output_format == "json":
-            typer.echo(_render_json(result))
+            typer.echo(render_json_report(result))
         else:
-            typer.echo(_render_console(result))
+            typer.echo(render_console_report(result))
     except ConfigError as exc:
         typer.echo(f"Error de configuracion: {exc}", err=True)
         raise typer.Exit(3) from exc
