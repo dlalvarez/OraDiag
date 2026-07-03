@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 
 from pydantic import ValidationError
@@ -31,6 +32,20 @@ app = typer.Typer(
 @app.callback()
 def main() -> None:
     """CLI de OraDiag."""
+
+
+def _package_version() -> str:
+    try:
+        return version("oradiag")
+    except PackageNotFoundError:
+        return "0.0.0"
+
+
+@app.command("version")
+def version_command() -> None:
+    """Identifica la herramienta sin requerir conectividad ni configuracion."""
+
+    typer.echo(f"OraDiag version {_package_version()}")
 
 
 @app.command("run")
