@@ -1,0 +1,26 @@
+targets:
+  lab_orcl_01:
+    id: lab_orcl_01
+    display_name: "Laboratorio ORCL 01"
+    environment: lab
+    host_alias: lab-db-01
+    notes: "Target de laboratorio sin credenciales reales."
+    metadata:
+      role: database-lab
+      owner: dba-lab
+
+profiles:
+  diag_all:
+    name: diag_all
+    description: "Revision amplia simulada para Fase 1, sin conectividad real."
+    access_layers:
+      - database
+      - storage
+      - user_access
+      - infrastructure
+    reviews:
+      - locks
+      - waits
+      - user_access
+      - storage_space
+      - technical_ok_boundary
