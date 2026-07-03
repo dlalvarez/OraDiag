@@ -2,6 +2,18 @@
 
 Cada fase debe respetar el Documento Rector, actualizar documentación aplicable y no adelantar lógica fuera de alcance.
 
+## Agrupación oficial de specs
+
+- `000-gobierno-y-constitucion`: Fase 0.
+- `001-core-rca-sin-conectividad-real`: Fase 1.
+- `002-acceso-por-capas-y-discovery-oracle`: Fases 2 y 3.
+- `003-errores-usuarios-y-autenticacion`: Fases 4 y 5.
+- `004-sesiones-bloqueos-y-waits`: Fases 6 y 7.
+- `005-espacio-almacenamiento-y-redo`: Fases 8 y 9.
+- `006-correlacion-rca-y-reportes`: Fases 10 y 11.
+- `007-topologias-oracle-avanzadas`: Fase 12.
+- `008-historico-y-extensiones`: Fases 13 y 14.
+
 ## Fase 0: Gobierno documental
 - **Objetivo**: crear fuente de verdad documental.
 - **Alcance**: README, documentos rectores, matriz, backlog, plantilla PR y placeholders mínimos.
@@ -10,12 +22,12 @@ Cada fase debe respetar el Documento Rector, actualizar documentación aplicable
 - **Pruebas esperadas**: validación de archivos y revisión de alcance.
 - **Documentación**: todos los documentos iniciales.
 
-## Fase 1: CLI, configuración, perfiles y modelos base
+## Fase 1: Core RCA sin conectividad real
 - **Objetivo**: esqueleto ejecutable sin conectividad real.
-- **Alcance**: CLI mínima, parsing, modelos de datos y perfiles declarativos.
-- **Fuera de alcance**: Oracle real, SSH real, collectors reales.
+- **Alcance**: CLI, configuración, perfiles, modelos base, Evidence Payload, fixtures de laboratorio, RCA engine mínimo simulado y salidas console/json.
+- **Fuera de alcance**: conexión Oracle real, SSH real, listener real, collectors reales, consultas SQL reales y lectura real de alert log.
 - **Criterios de aceptación**: comandos mock controlados y modelos validados.
-- **Pruebas esperadas**: unitarias de CLI/modelos.
+- **Pruebas esperadas**: unitarias de CLI/modelos, Evidence Payload, fixtures, RCA mínimo simulado y salidas console/json.
 - **Documentación**: arquitectura, perfiles, evidencia.
 
 ## Fase 2: Conectividad por capas
@@ -82,9 +94,9 @@ Cada fase debe respetar el Documento Rector, actualizar documentación aplicable
 - **Pruebas esperadas**: fixtures de redo/archive.
 - **Documentación**: RCA y dominios.
 
-## Fase 10: RCA correlator inicial
-- **Objetivo**: correlacionar revisiones en una causa probable.
-- **Alcance**: reglas determinísticas, roles causales, confianza.
+## Fase 10: RCA correlator avanzado
+- **Objetivo**: ampliar la correlación RCA más allá del motor mínimo simulado de Fase 1 para correlacionar revisiones en una causa probable.
+- **Alcance**: reglas determinísticas avanzadas, roles causales, confianza y correlación entre múltiples capas técnicas.
 - **Fuera de alcance**: IA obligatoria.
 - **Criterios de aceptación**: conclusiones sin evidencia prohibidas.
 - **Pruebas esperadas**: casos RCA end-to-end simulados.
