@@ -1,0 +1,71 @@
+schema_version: "1.0"
+scenario:
+  id: insufficient_access
+  name: "Evidencia insuficiente por acceso limitado"
+  symptom: slow_performance
+  target_id: lab_orcl_01
+  profile: diag_all
+target:
+  target_id: lab_orcl_01
+  display_name: "Laboratorio ORCL 01"
+  environment: lab
+  metadata:
+    host_alias: lab-db-01
+provider:
+  provider_type: fixture
+  provider_name: FixtureEvidenceProvider
+  source_ref: tests/fixtures/lab/insufficient_access.yaml
+access_layers:
+  - name: database
+    available: false
+    status: ERROR
+    limitations:
+      - id: lim-db-access
+        type: insufficient_permissions
+        scope: database
+        message: "La capa de base no pudo evaluarse por permisos insuficientes simulados."
+        impact: "No se puede confirmar ni descartar causa tecnica en base."
+  - name: storage
+    available: true
+    status: TIMEOUT
+    limitations:
+      - id: lim-storage-timeout
+        type: timeout
+        scope: storage
+        message: "La revision simulada de almacenamiento excedio el tiempo permitido."
+        impact: "La evidencia de almacenamiento queda incompleta."
+reviews:
+  - check_id: locks
+    title: "Bloqueos y contencion"
+    status: ERROR
+    severity: warning
+    limitations:
+      - id: lim-locks-access
+        type: insufficient_permissions
+        scope: locks
+        message: "No fue posible evaluar bloqueos por permiso insuficiente simulado."
+        impact: "No se puede usar esta revision para causalidad."
+  - check_id: waits
+    title: "Esperas simuladas"
+    status: TIMEOUT
+    severity: warning
+    limitations:
+      - id: lim-waits-timeout
+        type: timeout
+        scope: waits
+        message: "La revision de esperas simuladas finalizo por timeout."
+        impact: "La evidencia temporal queda incompleta."
+observations: []
+limitations:
+  - id: lim-run-incomplete
+    type: incomplete_data
+    scope: diagnostic_run
+    message: "La ejecucion simulada no reunio evidencia suficiente."
+    impact: "El diagnostico debe permanecer indeterminado."
+expected_output:
+  assessment:
+    status: undetermined
+    domain: undetermined
+expected_diagnosis:
+  insufficient_evidence: true
+

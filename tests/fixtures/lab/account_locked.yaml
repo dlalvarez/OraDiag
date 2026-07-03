@@ -1,0 +1,59 @@
+schema_version: "1.0"
+scenario:
+  id: account_locked
+  name: "Acceso de usuario bloqueado simulado"
+  symptom: cannot_connect
+  target_id: lab_orcl_01
+  profile: diag_all
+target:
+  target_id: lab_orcl_01
+  display_name: "Laboratorio ORCL 01"
+  environment: lab
+  metadata:
+    host_alias: lab-db-01
+provider:
+  provider_type: fixture
+  provider_name: FixtureEvidenceProvider
+  source_ref: tests/fixtures/lab/account_locked.yaml
+access_layers:
+  - name: user_access
+    available: true
+    status: OK
+  - name: database
+    available: true
+    status: OK
+reviews:
+  - check_id: user_access
+    title: "Estado de acceso de usuario"
+    status: PROBLEM
+    severity: critical
+  - check_id: database_availability
+    title: "Disponibilidad tecnica simulada"
+    status: OK
+    severity: info
+    ok_relevance: "La base de datos simulada esta disponible para otros accesos."
+observations:
+  - id: obs-user-001
+    check_id: user_access
+    subject:
+      kind: user_account
+      id: app_user_sim
+      name: "Usuario aplicativo simulado"
+      attributes:
+        account_state: locked
+    status: CRITICAL
+    severity: critical
+    polarity: positive
+    candidate_domain: user
+    message: "La cuenta simulada esta bloqueada y coincide con el sintoma de conexion fallida."
+    structured_data:
+      affected_scope: single_user
+      related_to_symptom: true
+limitations: []
+expected_output:
+  assessment:
+    status: determined
+    domain: user
+expected_diagnosis:
+  primary_domain: user
+

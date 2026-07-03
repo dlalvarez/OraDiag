@@ -1,0 +1,52 @@
+schema_version: "1.0"
+scenario:
+  id: all_technical_ok_app_data_suspected
+  name: "Tecnico OK con frontera Aplicacion/Datos"
+  symptom: errors
+  target_id: lab_orcl_01
+  profile: diag_all
+target:
+  target_id: lab_orcl_01
+  display_name: "Laboratorio ORCL 01"
+  environment: lab
+  metadata:
+    host_alias: lab-db-01
+provider:
+  provider_type: fixture
+  provider_name: FixtureEvidenceProvider
+  source_ref: tests/fixtures/lab/all_technical_ok_app_data_suspected.yaml
+access_layers:
+  - name: database
+    available: true
+    status: OK
+  - name: storage
+    available: true
+    status: OK
+  - name: infrastructure
+    available: true
+    status: OK
+reviews:
+  - check_id: database_health
+    title: "Estado tecnico de base"
+    status: OK
+    severity: info
+    ok_relevance: "La revision tecnica simulada de base no muestra evidencia causal."
+  - check_id: storage_space
+    title: "Espacio simulado"
+    status: OK
+    severity: info
+    ok_relevance: "El almacenamiento simulado no muestra presion causal."
+  - check_id: infrastructure_path
+    title: "Ruta de infraestructura simulada"
+    status: OK
+    severity: info
+    ok_relevance: "La infraestructura simulada no muestra falla causal."
+observations: []
+limitations: []
+expected_output:
+  assessment:
+    status: determined
+    domain: data
+expected_diagnosis:
+  primary_domain: data
+
