@@ -1,0 +1,54 @@
+schema_version: "1.0"
+scenario:
+  id: storage_pressure
+  name: "Presion de almacenamiento simulada"
+  symptom: availability_down
+  target_id: lab_orcl_01
+  profile: diag_all
+target:
+  target_id: lab_orcl_01
+  display_name: "Laboratorio ORCL 01"
+  environment: lab
+  metadata:
+    host_alias: lab-db-01
+provider:
+  provider_type: fixture
+  provider_name: FixtureEvidenceProvider
+  source_ref: tests/fixtures/lab/storage_pressure.yaml
+access_layers:
+  - name: storage
+    available: true
+    status: OK
+  - name: database
+    available: true
+    status: OK
+reviews:
+  - check_id: storage_space
+    title: "Capacidad de almacenamiento"
+    status: CRITICAL
+    severity: blocker
+observations:
+  - id: obs-storage-001
+    check_id: storage_space
+    subject:
+      kind: storage_area
+      id: data_area_sim
+      name: "Area de datos simulada"
+      attributes:
+        free_percent: 1
+    status: CRITICAL
+    severity: blocker
+    polarity: positive
+    candidate_domain: storage
+    message: "La presion de almacenamiento simulada puede explicar la indisponibilidad reportada."
+    structured_data:
+      free_percent: 1
+      related_to_symptom: true
+limitations: []
+expected_output:
+  assessment:
+    status: determined
+    domain: storage
+expected_diagnosis:
+  primary_domain: storage
+
