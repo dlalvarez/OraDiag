@@ -13,7 +13,6 @@ from oradiag.config import (
     resolve_profile,
     resolve_target,
 )
-from oradiag.models import DiagnosticFinding, DiagnosticResult
 from oradiag.providers import (
     FixtureEvidenceProvider,
     FixtureFileNotFoundError,
