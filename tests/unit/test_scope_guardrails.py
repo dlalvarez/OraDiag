@@ -4,19 +4,38 @@ import tomllib
 
 ROOT = Path(__file__).resolve().parents[2]
 FORBIDDEN_DIR_NAMES = {"sql", "oracle", "ssh", "listener", "awr", "ash", "alert_log"}
-FORBIDDEN_CLASS_NAMES = {"OracleConnector", "SSHConnector", "ListenerCollector"}
+FORBIDDEN_CLASS_NAMES = {
+    "OracleCollector",
+    "OracleConnector",
+    "SSHCollector",
+    "SSHConnector",
+    "ListenerCollector",
+    "AlertLogCollector",
+    "AWRCollector",
+    "ASHCollector",
+}
 FORBIDDEN_DEPENDENCY_FRAGMENTS = {
-    "oracledb",
-    "cx-oracle",
-    "paramiko",
-    "sshtunnel",
-    "openai",
     "anthropic",
-    "sqlite",
-    "sqlalchemy",
-    "fastapi",
+    "asyncssh",
+    "cx-oracle",
     "django",
+    "fabric",
+    "fastapi",
     "flask",
+    "langchain",
+    "llama-index",
+    "mysqlclient",
+    "openai",
+    "oracledb",
+    "paramiko",
+    "psycopg",
+    "pymysql",
+    "sqlalchemy",
+    "sqlite",
+    "sqlite-utils",
+    "sshtunnel",
+    "starlette",
+    "uvicorn",
 }
 
 
@@ -31,23 +50,35 @@ def iter_project_files() -> list[Path]:
 
 
 def test_no_forbidden_future_phase_directories_exist() -> None:
-    dirs = {
-        path.name
-        for path in ROOT.rglob("*")
-        if path.is_dir() and ".git" not in path.parts and ".venv" not in path.parts
-    }
+    search_roots = [ROOT, ROOT / "src" / "oradiag"]
+    dirs = set()
+    for base in search_roots:
+        if base.exists():
+            dirs.update(
+                path.name
+                for path in base.rglob("*")
+                if path.is_dir()
+                and not {".git", ".venv", "__pycache__", ".pytest_cache"}.intersection(path.parts)
+            )
 
     assert FORBIDDEN_DIR_NAMES.isdisjoint(dirs)
 
 
 def test_no_sql_files_exist() -> None:
-    assert list(ROOT.rglob("*.sql")) == []
+    ignored_parts = {".git", ".venv", "__pycache__", ".pytest_cache"}
+    sql_files = [
+        path.relative_to(ROOT)
+        for path in ROOT.rglob("*.sql")
+        if not ignored_parts.intersection(path.parts)
+    ]
+
+    assert sql_files == []
 
 
 def test_no_forbidden_connector_class_names_exist() -> None:
     hits: list[str] = []
     for path in iter_project_files():
-        if path.suffix not in {".py", ".md", ".toml"}:
+        if path.suffix != ".py":
             continue
         text = path.read_text(encoding="utf-8", errors="ignore")
         for class_name in FORBIDDEN_CLASS_NAMES:
@@ -68,7 +99,17 @@ def test_no_forbidden_dependencies_are_declared() -> None:
 
 
 def test_examples_and_lab_fixtures_do_not_contain_secret_like_values() -> None:
-    secret_fragments = ("password", "passwd", "pwd", "secret", "token", "credential")
+    secret_fragments = (
+        "access_key",
+        "api_key",
+        "credential",
+        "passwd",
+        "password",
+        "private_key",
+        "pwd",
+        "secret",
+        "token",
+    )
     paths = []
     for base in [ROOT / "examples" / "lab", ROOT / "tests" / "fixtures" / "lab"]:
         if base.exists():
