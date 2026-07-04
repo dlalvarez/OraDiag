@@ -30,6 +30,7 @@ uv run oradiag run \
   --config examples/lab/config.yaml \
   --target lab_orcl_01 \
   --profile diag_all \
+  --symptom slow_performance \
   --fixture tests/fixtures/lab/slow_lock_contention.yaml \
   --output console
 ```
@@ -47,6 +48,7 @@ uv run oradiag run \
   --config examples/lab/config.yaml \
   --target lab_orcl_01 \
   --profile diag_all \
+  --symptom slow_performance \
   --fixture tests/fixtures/lab/slow_lock_contention.yaml \
   --output json
 ```
