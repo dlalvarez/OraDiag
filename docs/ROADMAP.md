@@ -1,135 +1,136 @@
 # Roadmap
 
-Cada fase debe respetar el Documento Rector, actualizar documentación aplicable y no adelantar lógica fuera de alcance.
+Roadmap vigente desde la constitución v2.0.0. Cada spec se planea y aprueba
+completa (spec, plan, modelo de datos, contratos y tareas) antes de
+implementarse con Claude Code. Solo la spec activa y la siguiente se detallan al
+máximo; las posteriores se refinan al cerrar la anterior, con lo aprendido.
 
-## Agrupación oficial de specs
+Principios transversales que toda spec debe respetar: núcleo SQL independiente
+de plataforma (XII), packs licenciados deshabilitados por defecto (XIII), solo
+lectura estricta (XIV) y correlación causal (XV).
 
-- `000-gobierno-y-constitucion`: Fase 0.
-- `001-core-rca-sin-conectividad-real`: Fase 1.
-- `002-acceso-por-capas-y-discovery-oracle`: Fases 2 y 3.
-- `003-errores-usuarios-y-autenticacion`: Fases 4 y 5.
-- `004-sesiones-bloqueos-y-waits`: Fases 6 y 7.
-- `005-espacio-almacenamiento-y-redo`: Fases 8 y 9.
-- `006-correlacion-rca-y-reportes`: Fases 10 y 11.
-- `007-topologias-oracle-avanzadas`: Fase 12.
-- `008-historico-y-extensiones`: Fases 13 y 14.
+## Mapa de dependencias
 
-## Fase 0: Gobierno documental
-- **Objetivo**: crear fuente de verdad documental.
-- **Alcance**: README, documentos rectores, matriz, backlog, plantilla PR y placeholders mínimos.
-- **Fuera de alcance**: lógica funcional.
-- **Criterios de aceptación**: documentación en español, consistente y completa.
-- **Pruebas esperadas**: validación de archivos y revisión de alcance.
-- **Documentación**: todos los documentos iniciales.
+```text
+003 modelo y motor causal
+ └─ 004 conexión Oracle y discovery
+     ├─ 005 sesiones, bloqueos y waits ──┐
+     ├─ 006 fuentes licenciadas ASH/AWR ─┤
+     ├─ 007 alert log y autenticación ───┼─ 009 correlación avanzada y reportes
+     └─ 008 almacenamiento y redo ───────┘        │
+                                                   ├─ 010 adaptadores de plataforma
+                                                   ├─ 011 topologías avanzadas
+                                                   └─ 012 histórico y extensiones
+```
 
-## Fase 1: Core RCA sin conectividad real
-- **Objetivo**: esqueleto ejecutable sin conectividad real.
-- **Alcance**: CLI, configuración, perfiles, modelos base, Evidence Payload, fixtures de laboratorio, RCA engine mínimo simulado y salidas console/json.
-- **Fuera de alcance**: conexión Oracle real, SSH real, listener real, collectors reales, consultas SQL reales y lectura real de alert log.
-- **Criterios de aceptación**: comandos mock controlados y modelos validados.
-- **Pruebas esperadas**: unitarias de CLI/modelos, Evidence Payload, fixtures, RCA mínimo simulado y salidas console/json.
-- **Documentación**: arquitectura, perfiles, evidencia.
+006, 007 y 008 dependen solo de 004 y pueden ejecutarse en cualquier orden.
 
-## Fase 2: Conectividad por capas
-- **Objetivo**: diseñar conectores con timeouts y fallas controladas.
-- **Alcance**: interfaces y pruebas con dobles.
-- **Fuera de alcance**: RCA avanzado.
-- **Criterios de aceptación**: errores convertidos en limitaciones.
-- **Pruebas esperadas**: timeouts, permisos, caídas simuladas.
-- **Documentación**: seguridad y errores.
+## Specs históricas
 
-## Fase 3: Discovery Oracle
-- **Objetivo**: descubrir contexto técnico Oracle disponible.
-- **Alcance**: versión, instancia, CDB/PDB, RAC/ASM/standby cuando sea visible.
-- **Fuera de alcance**: checks de performance.
-- **Criterios de aceptación**: discovery parcial tolerante a fallas.
-- **Pruebas esperadas**: mocks SQL/OS.
-- **Documentación**: arquitectura y evidencia.
+- `000-gobierno-y-constitucion`: gobierno documental v1. Vigente en lo que no
+  contradiga la constitución v2.0.0.
+- `001-core-rca-sin-conectividad-real`: superseded por 003. Su código no se
+  reutiliza.
+- `002-acceso-por-capas-y-discovery-oracle`: superseded por 004. Su modelo de
+  capas con SSH obligatorio se reemplaza por núcleo SQL + adaptadores.
 
-## Fase 4: Alert log y errores críticos
-- **Objetivo**: recolectar y evaluar errores críticos recientes.
-- **Alcance**: alert log, ORA críticos, timestamps y contexto.
-- **Fuera de alcance**: consultas de negocio.
-- **Criterios de aceptación**: errores soportados por evidencia.
-- **Pruebas esperadas**: fixtures de logs.
-- **Documentación**: RCA y evidencia.
+## 003 — Modelo de evidencia y motor causal
 
-## Fase 5: Usuario y autenticación
-- **Objetivo**: diagnosticar problemas de acceso de usuario.
-- **Alcance**: cuentas bloqueadas, expiradas, intentos fallidos y auditoría técnica disponible.
+- **Objetivo**: definir el contrato de evidencia y un motor RCA determinístico
+  que correlacione, en lugar de sumar severidades.
+- **Alcance**: Evidence Payload v2 (observaciones con marca de tiempo, ventana
+  del incidente, fuente, polaridad y limitaciones); modelo de hipótesis causales
+  y cadenas de evidencia; reglas causales declarativas; cálculo de confianza
+  explicable; fixtures de laboratorio; CLI (`run`, `validate`, `version`);
+  salidas console y JSON.
+- **Fuera de alcance**: conexión Oracle, consultas SQL, adaptadores de
+  plataforma, reportes markdown/html.
+- **Criterios de aceptación**: cada escenario de laboratorio produce la causa
+  esperada con su cadena de evidencia; un hallazgo grave fuera de la ventana
+  temporal queda como incidental; sin evidencia suficiente el resultado es
+  `unknown` o `Indeterminado`; JSON estable y versionado.
+- **Pruebas esperadas**: unitarias de modelos y reglas, escenarios end-to-end
+  con fixtures, snapshot de salida JSON, prueba de que el núcleo no importa SDKs
+  cloud ni SSH.
+
+## 004 — Conexión Oracle y discovery
+
+- **Objetivo**: conectar de forma segura y tolerante a fallas, y conocer qué se
+  puede evaluar en el target.
+- **Alcance**: conexión `python-oracledb` thin con `call_timeout`; credenciales
+  por variable de entorno o gestor de secretos referenciado; preflight de vistas
+  (`select 1 from <vista> where 1 = 0`); discovery de versión, edición,
+  CDB/PDB, RAC, rol Data Guard y plataforma (RDS u on-premise); declaración y
+  verificación de licencias de packs; generador del script de grants mínimos,
+  con variante `rdsadmin.rdsadmin_util.grant_sys_object` para RDS.
+- **Fuera de alcance**: revisiones de diagnóstico por dominio.
+- **Criterios de aceptación**: sin permisos o sin conexión, el resultado es un
+  diagnóstico parcial con limitaciones exactas (vista + ORA-), nunca un crash;
+  inconsistencia de licencia detectada y reportada.
+- **Pruebas esperadas**: dobles de conexión (timeout, ORA-01017, ORA-00942,
+  ORA-12170), discovery parcial, guardrail de licencias y guardrail de solo
+  lectura.
+
+## 005 — Sesiones, bloqueos y waits
+
+- **Objetivo**: diagnosticar incidentes en curso de lentitud, cuelgues y
+  contención usando solo vistas no licenciadas.
+- **Alcance**: `V$SESSION`, `V$SESSION_WAIT`, `V$LOCK` y cadenas de bloqueo,
+  `V$SYSTEM_EVENT` por deltas, `V$EVENT_HISTOGRAM`, `V$SYSMETRIC_HISTORY`
+  (última hora), `V$OSSTAT`, `V$SQL` acotado por `SQL_ID`; vistas `GV$` cuando
+  aplique.
+- **Validación previa**: confirmar en *Database Licensing Information* de la
+  versión objetivo que ninguna vista usada pertenece a un pack.
+- **Fuera de alcance**: ASH/AWR, tuning automático.
+- **Criterios de aceptación**: bloqueador -> víctimas -> síntoma correlacionado
+  como cadena causal; métricas de la última hora usadas como baseline reciente.
+
+## 006 — Fuentes licenciadas ASH y AWR
+
+- **Objetivo**: RCA de incidentes ya ocurridos por ventana temporal.
+- **Alcance**: `V$ACTIVE_SESSION_HISTORY` y `DBA_HIST_*` en módulo aislado,
+  habilitado solo con `diagnostic_pack: licensed` y parámetro coherente;
+  comparación contra una ventana de referencia.
+- **Fuera de alcance**: generación de reportes AWR/ADDM en el servidor (prohibido
+  por XIV), Tuning Pack salvo spec aprobada.
+- **Bloqueo**: no se ejecuta contra bases reales hasta confirmar licencia.
+
+## 007 — Errores, alert log y autenticación
+
+- **Alcance**: alert log por SQL (`V$DIAG_ALERT_EXT`; en RDS validar el grant o
+  usar `rdsadmin.rds_file_util` en modo lectura); ORA- críticos en la ventana;
+  `DBA_USERS` (estado, expiración, perfil); auditoría de logins si está
+  disponible.
 - **Fuera de alcance**: datos funcionales del usuario.
-- **Criterios de aceptación**: detalles de usuario sin secretos.
-- **Pruebas esperadas**: fixtures de estados y errores.
-- **Documentación**: seguridad y dominios.
 
-## Fase 6: Sesiones y bloqueos
-- **Objetivo**: identificar bloqueos, sesiones relevantes y contención.
-- **Alcance**: sesiones, usuarios, módulos, servicios, SQL_ID, inst_id, con_id.
-- **Fuera de alcance**: tuning automático.
-- **Criterios de aceptación**: bloqueador/víctima y evidencia.
-- **Pruebas esperadas**: escenarios simulados.
-- **Documentación**: RCA y evidencia.
+## 008 — Almacenamiento, redo, TEMP y UNDO
 
-## Fase 7: Wait analysis
-- **Objetivo**: analizar wait events y wait_class para rendimiento.
-- **Alcance**: esperas dominantes, correlación temporal y sesiones afectadas.
-- **Fuera de alcance**: AWR como dependencia inicial.
-- **Criterios de aceptación**: clasificación causal prudente.
-- **Pruebas esperadas**: fixtures de waits.
-- **Documentación**: RCA, dominios y backlog.
+- **Alcance**: tablespaces y autoextend, TEMP y UNDO en uso, FRA, redo log
+  switches, archive y waits de redo/I/O.
+- **Fuera de alcance**: capacity planning; espacio del volumen en RDS (lo cubre
+  el adaptador de 010).
 
-## Fase 8: Storage, FRA, TEMP y UNDO
-- **Objetivo**: diagnosticar presión de almacenamiento técnico.
-- **Alcance**: filesystem, ASM futuro, FRA, TEMP, UNDO e I/O observable.
-- **Fuera de alcance**: capacity planning.
-- **Criterios de aceptación**: distinguir incidente actual vs tendencia.
-- **Pruebas esperadas**: umbrales y límites simulados.
-- **Documentación**: dominios y seguridad.
+## 009 — Correlación avanzada y reportes
 
-## Fase 9: Redo, archive y log switches
-- **Objetivo**: analizar redo, archive, log switches y standby relacionado.
-- **Alcance**: frecuencia de switches, presión archive/FRA, waits redo.
-- **Fuera de alcance**: rediseño de capacidad.
-- **Criterios de aceptación**: evidencia temporal de impacto.
-- **Pruebas esperadas**: fixtures de redo/archive.
-- **Documentación**: RCA y dominios.
+- **Alcance**: correlación entre dominios (por ejemplo, I/O lento + log file
+  sync + switches frecuentes), reportes markdown y HTML con cadenas de evidencia
+  visibles.
 
-## Fase 10: RCA correlator avanzado
-- **Objetivo**: ampliar la correlación RCA más allá del motor mínimo simulado de Fase 1 para correlacionar revisiones en una causa probable.
-- **Alcance**: reglas determinísticas avanzadas, roles causales, confianza y correlación entre múltiples capas técnicas.
-- **Fuera de alcance**: IA obligatoria.
-- **Criterios de aceptación**: conclusiones sin evidencia prohibidas.
-- **Pruebas esperadas**: casos RCA end-to-end simulados.
-- **Documentación**: RCA, matriz y decisiones.
+## 010 — Adaptadores de plataforma
 
-## Fase 11: Reportes maduros
-- **Objetivo**: salidas console, json, markdown y html.
-- **Alcance**: formato estable y legible.
-- **Fuera de alcance**: dashboards.
-- **Criterios de aceptación**: reportes incluyen OK, problemas y limitaciones.
-- **Pruebas esperadas**: snapshots de salida.
-- **Documentación**: arquitectura y evidencia.
+- **Alcance**: adaptador AWS RDS opcional (métricas CloudWatch, Enhanced
+  Monitoring, eventos RDS, logs) y adaptador on-premise opcional (SSH con
+  verificación de host key). OCI cuando se requiera.
+- **Regla**: el núcleo funciona sin ellos; aportan evidencia a los dominios
+  Sistema Operativo, Infraestructura y Almacenamiento.
 
-## Fase 12: RAC, ASM, Multitenant y Standby avanzado
-- **Objetivo**: ampliar cobertura Oracle avanzada.
-- **Alcance**: instancias, disk groups, PDBs y Data Guard.
-- **Fuera de alcance**: automatizar cambios productivos.
-- **Criterios de aceptación**: contexto inst_id/con_id explícito.
-- **Pruebas esperadas**: fixtures multiinstancia.
-- **Documentación**: dominios y arquitectura.
+## 011 — Topologías avanzadas
 
-## Fase 13: Histórico de incidentes
-- **Objetivo**: registrar incidentes y resoluciones confirmadas.
-- **Alcance**: store local futuro y comparación de casos.
-- **Fuera de alcance**: dependencia obligatoria para diagnóstico inicial.
-- **Criterios de aceptación**: trazabilidad de resolución humana.
-- **Pruebas esperadas**: persistencia y migraciones.
-- **Documentación**: seguridad, backlog y decisiones.
+- **Alcance**: RAC (`inst_id`), Multitenant (`con_id`) y Data Guard
+  (transport/apply lag) desde la perspectiva de RCA.
 
-## Fase 14: Mejoras futuras y extensiones
-- **Objetivo**: incorporar extensiones controladas.
-- **Alcance**: IA opcional, integraciones, dashboards, AWR licenciado opcional.
-- **Fuera de alcance**: romper reglas rectoras.
-- **Criterios de aceptación**: extensiones opt-in y gobernadas.
-- **Pruebas esperadas**: integración aislada.
-- **Documentación**: backlog, decisiones y matriz.
+## 012 — Histórico y extensiones
+
+- **Alcance**: registro de incidentes y resoluciones confirmadas; extensiones
+  opt-in. Cualquier integración con IA o MCP requiere spec propia y aprobación
+  de seguridad.
