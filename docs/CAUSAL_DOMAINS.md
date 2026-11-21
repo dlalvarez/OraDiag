@@ -1,59 +1,100 @@
 # Dominios causantes
 
-Cada diagnóstico relevante debe clasificar el dominio causante probable cuando exista evidencia suficiente.
+Cada diagnóstico clasifica el dominio causante probable cuando existe evidencia
+suficiente. El dominio orienta al equipo que debe actuar. Para cada dominio se
+indica qué evidencia aporta el núcleo SQL (disponible en cualquier plataforma)
+y qué requiere un adaptador de plataforma.
 
 ## Sistema Operativo
-- **Definición**: recursos y servicios del host que afectan Oracle.
-- **Ejemplos**: CPU saturada, memoria insuficiente, procesos bloqueados, límites del sistema.
-- **Evidencias típicas**: métricas OS, errores de kernel, uso de recursos, filesystem visible.
-- **Limitaciones**: requiere acceso al host o logs disponibles.
-- **Reglas**: clasificar aquí cuando la evidencia OS explique el incidente.
+
+- **Definición**: recursos del host que afectan a Oracle.
+- **Ejemplos**: CPU saturada, presión de memoria, swapping, límites del sistema.
+- **Núcleo SQL**: `V$OSSTAT` (CPU, load, memoria) y `V$SYSMETRIC_HISTORY`
+  (consumo de CPU de host y base en la última hora).
+- **Adaptador**: Enhanced Monitoring en RDS; comandos del sistema vía SSH
+  on-premise.
+- **Limitación**: en RDS no hay acceso al host; sin adaptador, la evidencia es
+  la que la base expone de sí misma.
+- **Regla**: clasificar aquí cuando la evidencia del host explique el incidente.
 
 ## Infraestructura
-- **Definición**: red, DNS, virtualización, balanceadores o componentes externos técnicos.
-- **Ejemplos**: latencia de red, fallo DNS, VIP no disponible, listener inaccesible por red.
-- **Evidencias típicas**: pruebas de conectividad, errores listener, rutas y timeouts.
-- **Limitaciones**: OraDiag puede ver síntomas técnicos, no toda la plataforma externa.
-- **Reglas**: usar cuando la falla esté fuera de Oracle pero afecte acceso o disponibilidad.
+
+- **Definición**: red, DNS, balanceadores y la plataforma gestionada (RDS, OCI
+  u on-premise virtualizado).
+- **Ejemplos**: failover Multi-AZ, mantenimiento o reinicio de RDS, latencia de
+  red, fallo de resolución, servicio no alcanzable.
+- **Núcleo SQL**: `startup_time` de la instancia, errores de conexión de
+  OraDiag, alert log.
+- **Adaptador**: eventos y estado de la instancia en RDS; pruebas de red
+  on-premise.
+- **Regla**: usar cuando la falla esté fuera de Oracle pero afecte acceso o
+  disponibilidad.
 
 ## Almacenamiento
-- **Definición**: filesystems, ASM futuro, FRA, TEMP, UNDO, I/O y espacio.
-- **Ejemplos**: FRA llena, TEMP agotado, I/O lento, archive destination lleno.
-- **Evidencias típicas**: uso de espacio, waits de I/O, errores de escritura, alert log.
-- **Limitaciones**: no equivale a capacity planning.
-- **Reglas**: clasificar aquí cuando almacenamiento cause o limite la operación.
+
+- **Definición**: espacio e I/O: tablespaces, TEMP, UNDO, FRA, archive y el
+  volumen subyacente.
+- **Ejemplos**: TEMP agotado, FRA llena, archive sin espacio, latencia de I/O,
+  throttling de IOPS del volumen.
+- **Núcleo SQL**: uso de tablespaces, TEMP y UNDO, `V$RECOVERY_AREA_USAGE`,
+  waits e histogramas de I/O, alert log.
+- **Adaptador**: espacio libre, IOPS, throughput y latencia del volumen
+  (CloudWatch en RDS; filesystem vía SSH on-premise).
+- **Limitación**: la base ve síntomas de I/O, no la causa en el volumen; sin
+  adaptador, el throttling del volumen queda como hipótesis de baja confianza.
+- **Regla**: no equivale a capacity planning; clasificar aquí cuando el
+  almacenamiento cause o limite la operación en la ventana.
 
 ## Base de datos
-- **Definición**: estado y componentes internos Oracle bajo vistas técnicas.
-- **Ejemplos**: instancia caída, ORA críticos, bloqueos, waits dominantes, redo log buffer.
-- **Evidencias típicas**: alert log, vistas dinámicas, sesiones, wait_class, SQL_ID, inst_id, con_id.
-- **Limitaciones**: depende de permisos y disponibilidad SQL.
-- **Reglas**: usar cuando la causa esté en comportamiento técnico Oracle.
+
+- **Definición**: comportamiento técnico de Oracle observable en vistas.
+- **Ejemplos**: bloqueos, waits dominantes, ORA- críticos, contención de redo,
+  latches o mutex, instancia en estado anómalo.
+- **Núcleo SQL**: sesiones, bloqueos, waits, métricas, alert log, `SQL_ID`,
+  `inst_id`, `con_id`. ASH y AWR si hay licencia.
+- **Regla**: usar cuando la causa esté en el comportamiento técnico de Oracle.
 
 ## Aplicación
-- **Definición**: comportamiento técnico de clientes, módulos, servicios o patrones SQL observables.
-- **Ejemplos**: tormenta de conexiones, módulo específico saturando sesiones, SQL_ID asociado a esperas.
-- **Evidencias típicas**: module, service_name, client_identifier, SQL_ID, sesiones y errores de conexión.
-- **Limitaciones**: no implica revisar código ni datos funcionales.
-- **Reglas**: usar cuando la evidencia técnica apunte al cliente o patrón de aplicación.
+
+- **Definición**: comportamiento técnico de clientes, módulos, servicios o
+  patrones SQL observables.
+- **Ejemplos**: tormenta de conexiones, módulo saturando sesiones, un `SQL_ID`
+  concentrando la carga, transacciones sin commit que bloquean.
+- **Núcleo SQL**: `module`, `action`, `service_name`, `client_identifier`,
+  `SQL_ID`, sesiones y errores de conexión.
+- **Limitación**: no implica revisar código ni datos funcionales.
+- **Regla**: usar cuando la evidencia técnica apunte al cliente o a un patrón
+  de aplicación.
 
 ## Usuario
+
 - **Definición**: problemas técnicos de cuentas y autenticación.
-- **Ejemplos**: cuenta bloqueada, password expirado, intentos fallidos, permisos insuficientes.
-- **Evidencias típicas**: estado de cuenta, errores ORA de login, auditoría de sesión disponible.
-- **Limitaciones**: no analiza intención ni datos de negocio del usuario.
-- **Reglas**: usar cuando el incidente sea explicado por autenticación/autorización técnica.
+- **Ejemplos**: cuenta bloqueada, password expirado, intentos fallidos,
+  privilegios insuficientes.
+- **Núcleo SQL**: `DBA_USERS`, perfiles, auditoría de logins disponible.
+- **Limitación**: no analiza intención ni datos de negocio del usuario.
+- **Regla**: usar cuando el incidente se explique por autenticación o
+  autorización técnica.
 
 ## Datos
-- **Definición**: conclusión límite para indicar que no hay evidencia técnica bajo alcance y que el problema podría estar en datos, aplicación o usuario funcional.
-- **Ejemplos**: reclamo funcional sin waits, errores, bloqueos, almacenamiento, listener o sesiones anómalas bajo alcance.
-- **Evidencias típicas**: revisiones técnicas OK y ausencia de evidencia causal técnica.
-- **Limitaciones**: no habilita consultas a tablas de negocio ni investigación funcional.
-- **Reglas**: solo usar como hipótesis límite con recomendación de escalar al equipo funcional/aplicación.
+
+- **Definición**: conclusión límite: sin evidencia técnica bajo alcance, el
+  problema podría estar en datos, aplicación o uso funcional.
+- **Ejemplos**: reclamo funcional sin waits, errores, bloqueos, presión de
+  almacenamiento ni sesiones anómalas en la ventana.
+- **Evidencia típica**: revisiones técnicas OK relevantes y ausencia de
+  evidencia causal técnica.
+- **Limitación**: no habilita consultas a tablas de negocio.
+- **Regla**: solo como hipótesis límite, con recomendación de escalar al equipo
+  funcional o de aplicación. Requiere que los dominios técnicos relevantes
+  estén evaluados; si hay dominios en `not_evaluated`, corresponde
+  Indeterminado.
 
 ## Indeterminado
+
 - **Definición**: evidencia insuficiente o contradictoria.
-- **Ejemplos**: accesos fallidos a todas las capas, datos parciales inconclusos.
-- **Evidencias típicas**: limitaciones, timeouts, errores de permisos.
-- **Limitaciones**: requiere más información.
-- **Reglas**: usar cuando no sea responsable asignar otro dominio.
+- **Ejemplos**: sin acceso a ninguna fuente, dominios relevantes no evaluados,
+  hipótesis competidoras sin desempate.
+- **Evidencia típica**: limitaciones, timeouts, errores de permisos.
+- **Regla**: usar cuando no sea responsable asignar otro dominio, indicando qué
+  evidencia faltante permitiría concluir.

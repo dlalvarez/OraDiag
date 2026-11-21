@@ -11,7 +11,9 @@ description: "Task list template for feature implementation"
 
 **Tests**: Automated tests are REQUIRED by the OraDiag constitution. Include
 tests for every implemented behavior and especially for evidence, causal roles,
-limitations, OK reviews, no business data and stable JSON where applicable.
+causal correlation with the incident window, limitations, OK reviews, no
+business data, licensed sources off by default, SELECT-only and stable JSON
+where applicable. Write tests before the implementation task they cover.
 
 **Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
 
@@ -23,10 +25,9 @@ limitations, OK reviews, no business data and stable JSON where applicable.
 
 ## Path Conventions
 
-- **Single project**: `src/`, `tests/` at repository root
-- **Web app**: `backend/src/`, `frontend/src/`
-- **Mobile**: `api/src/`, `ios/src/` or `android/src/`
-- Paths shown below assume single project - adjust based on plan.md structure
+- `src/oradiag/` and `tests/` at repository root, following docs/ARCHITECTURE.md
+- Licensed sources only under `src/oradiag/sources/licensed/`
+- Platform code only under `src/oradiag/adapters/` (optional extras)
 
 <!--
   ============================================================================
@@ -54,7 +55,7 @@ limitations, OK reviews, no business data and stable JSON where applicable.
 - [ ] T001 Create project structure per implementation plan
 - [ ] T002 Initialize [language] project with [framework] dependencies
 - [ ] T003 [P] Configure linting and formatting tools
-- [ ] T004 [P] Document roadmap phase, rector docs and constitutional gates for this feature in specs/[###-feature-name]/plan.md
+- [ ] T004 [P] Document roadmap spec, rector docs and constitutional gates for this feature in specs/[###-feature-name]/plan.md
 
 ---
 
@@ -72,6 +73,8 @@ Examples of foundational tasks (adjust based on your project):
 - [ ] T008 Add safeguards that prevent business-table or functional-data access/modeling
 - [ ] T009 Define security and secret-redaction requirements for configuration, logs and reports
 - [ ] T010 Define automated test coverage required by the OraDiag constitution
+- [ ] T011 [P] Keep guardrail tests green: core imports (XII), licensed views outside sources/licensed/ (XIII), non-SELECT statements (XIV), business tables (VII)
+- [ ] T012 [P] Document normal and RDS grants for every new view in the spec's sources table
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -169,7 +172,7 @@ Examples of foundational tasks (adjust based on your project):
 - [ ] TXXX [P] Additional unit tests (if requested) in tests/unit/
 - [ ] TXXX Security hardening
 - [ ] TXXX Verify no `propuesta de desviación` was implemented without explicit human authorization
-- [ ] TXXX Verify no business-table, functional-data or OraHealth/OraParity analogy scope entered the feature
+- [ ] TXXX Verify no business-table, functional-data or OraHealth-by-analogy scope entered the feature
 - [ ] TXXX Run quickstart.md validation
 
 ---

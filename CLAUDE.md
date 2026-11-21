@@ -92,7 +92,8 @@ uv run oradiag --help
 
 ## Estado
 
-Constitución v2.0.0 aprobada; roadmap reescrito (`docs/ROADMAP.md`). Siguiente
+Constitución v2.0.0 aprobada; `docs/`, plantillas de Spec Kit y spec 000
+revisadas y alineadas; specs 001 y 002 marcadas como históricas. Siguiente
 paso: planeación completa de la spec `003-modelo-de-evidencia-y-motor-causal`.
 El código en `src/` y `tests/` pertenece a la implementación anterior y se
 retirará en un commit explícito antes de implementar la 003.

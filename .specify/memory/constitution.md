@@ -21,8 +21,10 @@ Changed sections:
   nueva agrupación desde 003.
 - Asuntos Pendientes: se cierran los de v1.0.0 y se registran los nuevos.
 Templates requiring updates:
-- .specify/templates/plan-template.md: el Constitution Check debe cubrir XII-XV
-  (pendiente, se ajusta al iniciar la spec 003).
+- .specify/templates/plan-template.md: Constitution Check con XII-XV (hecho).
+- .specify/templates/spec-template.md: tabla de fuentes, grants y licencias (hecho).
+- .specify/templates/tasks-template.md: guardrails XII-XIV (hecho).
+- Integración de Spec Kit: cambiar de Codex a Claude Code (pendiente).
 Follow-up TODOs:
 - Confirmar licenciamiento de Diagnostics/Tuning Pack (ver Asuntos Pendientes).
 - Decidir el retiro del código de la implementación anterior (ver Asuntos Pendientes).

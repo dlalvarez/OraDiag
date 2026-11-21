@@ -1,21 +1,50 @@
 # Manejo de errores y timeouts
 
-Todo conector, consulta y collector futuro debe tener timeout. Ninguna capa debe quedar colgada indefinidamente.
+Toda conexión, consulta, collector y adaptador tiene timeout. Ninguna fuente
+puede dejar colgado el diagnóstico.
 
 ## Reglas
 
-- Todo connector debe tener timeout configurable.
-- Toda consulta debe tener timeout configurable.
-- Todo collector debe fallar de forma controlada.
-- Un timeout es evidencia o limitación, no un crash.
-- El diagnóstico parcial es preferible a quedarse colgado.
-- Los estados `TIMEOUT`, `ERROR` y `SKIPPED` deben registrarse y reportarse.
-- Una capa fallida no debe impedir revisar otras capas independientes.
+- Conexión con timeout de conexión configurable.
+- Cada consulta con `call_timeout` de `python-oracledb`, configurable por
+  revisión, con un valor por defecto conservador.
+- Presupuesto total de tiempo por diagnóstico: al agotarse, las revisiones
+  pendientes quedan `not_evaluated` con limitación `timeout` y se emite el
+  reporte con lo obtenido.
+- Todo collector y adaptador falla de forma controlada y devuelve limitaciones.
+- Un timeout es una limitación, no un crash.
+- Una fuente fallida no impide evaluar fuentes independientes.
+- Los motivos se registran exactos: vista, código ORA- o DPY- y mensaje.
 
-## Continuidad por capas
+## Mapeo de errores frecuentes
 
-Si SSH falla, se puede intentar SQL si hay ruta disponible. Si SQL falla, se pueden analizar logs o sistema operativo si existen accesos. Si la base está caída, OraDiag debe explicar qué pudo y no pudo evaluar.
+| Error | Significado típico | Limitación |
+|---|---|---|
+| ORA-00942 | Vista inexistente o sin grant | `permission_denied` o `unsupported_version` según el preflight |
+| ORA-01031 | Privilegios insuficientes | `permission_denied` |
+| ORA-01017 | Credenciales inválidas | `connection_failed` |
+| ORA-12170, ORA-12541, ORA-12514 | Red, listener o servicio no alcanzable | `connection_failed` |
+| ORA-28000 | Cuenta de OraDiag bloqueada | `connection_failed` |
+| Timeout de llamada de `python-oracledb` | La consulta excedió `call_timeout` | `timeout` |
+
+El mapeo exacto de códigos DPY- de `python-oracledb` se valida en la spec 004.
+
+## Continuidad entre fuentes
+
+1. **Núcleo SQL**: si la conexión falla, los dominios que dependen de SQL quedan
+   `not_evaluated`, pero el propio fallo es evidencia (por ejemplo, para
+   `cannot_connect`).
+2. **Fuentes licenciadas**: sin licencia declarada no se consultan; con licencia
+   y fallo, se registran como limitación sin afectar al núcleo.
+3. **Adaptadores de plataforma**: si fallan, el núcleo sigue; si el núcleo
+   falla, los adaptadores aún pueden aportar evidencia de plataforma (por
+   ejemplo, un failover registrado en los eventos de RDS).
+
+Si la base está caída, OraDiag explica qué pudo y no pudo evaluar, y con qué
+fuentes.
 
 ## Reporte
 
-El reporte debe mostrar revisiones no evaluadas, motivo, impacto en confianza y acciones seguras para obtener evidencia adicional.
+El reporte muestra las revisiones no evaluadas, su motivo exacto, su impacto en
+la confianza y las acciones seguras para obtener la evidencia faltante (por
+ejemplo, el grant concreto que falta).

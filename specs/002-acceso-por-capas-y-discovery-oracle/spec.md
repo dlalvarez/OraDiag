@@ -1,5 +1,8 @@
 # Feature Specification: Acceso por capas y Discovery Oracle
 
+> **Spec histórica.** Superseded por `004-conexion-oracle-y-discovery` (constitución v2.0.0). No se implementa. Ver [REVISION.md](./REVISION.md) para lo que se conserva y lo que se descarta.
+
+
 **Feature Branch**: `002-acceso-por-capas-y-discovery-oracle`
 
 **Created**: 2026-07-04

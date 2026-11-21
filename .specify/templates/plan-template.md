@@ -18,9 +18,9 @@
   the iteration process.
 -->
 
-**Language/Version**: [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION]
+**Language/Version**: [Python 3.12+ per constitution, or NEEDS CLARIFICATION]
 
-**Primary Dependencies**: [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]
+**Primary Dependencies**: [Typer, Pydantic, PyYAML, python-oracledb thin; platform SDKs only as optional extras]
 
 **Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
 
@@ -45,8 +45,8 @@ The plan MUST explicitly answer each OraDiag constitutional gate:
 - **RCA scope**: Confirms the feature investigates Oracle incidents and does
   not become health check, capacity planning, functional audit, business-data
   exploration or a generic anomaly finder.
-- **Roadmap phase**: Identifies the exact roadmap phase/spec grouping and
-  confirms no future phase is implemented early.
+- **Roadmap spec**: Identifies the exact spec of `docs/ROADMAP.md` (003-012)
+  and confirms no future spec is implemented early.
 - **Evidence**: Defines required positive evidence, negative evidence and
   explicit limitations before any diagnosis or recommendation.
 - **Symptom handling**: Treats reported symptoms as prioritization context, not
@@ -75,6 +75,21 @@ The plan MUST explicitly answer each OraDiag constitutional gate:
   Spanish.
 - **Deviations**: Marks anything outside the constitution, active spec, approved
   plan or roadmap as `propuesta de desviación` requiring human authorization.
+- **Platform-independent core (XII)**: `domain/`, `engine/`, `reports/` and
+  `sources/sql/` import no cloud SDK or SSH library; platform evidence lives in
+  optional adapters; lists what becomes `not_evaluated` without them.
+- **Explicit licensing (XIII)**: Every view/package is classified
+  (none/diagnostic_pack/tuning_pack) and validated against Oracle licensing
+  docs; licensed sources live only in `sources/licensed/`, are off by default
+  and check `control_management_pack_access`.
+- **Strict read-only (XIV)**: Only SELECT; no DML/DDL, ALTER SYSTEM, object
+  creation, server files or state-changing procedures; queries bounded by
+  incident window and filters.
+- **Causal correlation (XV)**: Primary cause comes from evidence chains
+  correlated with the incident window; documents the causal rules and why
+  confidence is high/medium/low.
+- **RDS specifics**: Each new view documents its normal grant and its
+  `rdsadmin.rdsadmin_util.grant_sys_object` equivalent.
 
 ## Project Structure
 
@@ -99,39 +114,24 @@ specs/[###-feature]/
 -->
 
 ```text
-# [REMOVE IF UNUSED] Option 1: Single project (DEFAULT)
-src/
-├── models/
-├── services/
+# OraDiag layout (docs/ARCHITECTURE.md). Keep only the folders this spec touches.
+src/oradiag/
+├── domain/          # models, enums, Evidence Payload, results
+├── engine/          # causal engine, rules, confidence
+├── sources/
+│   ├── sql/         # connection, preflight, discovery, collectors
+│   ├── licensed/    # ASH/AWR (licensed, isolated)
+│   └── lab/         # lab fixtures provider
+├── adapters/        # optional extras: aws_rds/, onprem_ssh/
+├── reports/
 ├── cli/
-└── lib/
+└── config/
 
 tests/
-├── contract/
-├── integration/
-└── unit/
-
-# [REMOVE IF UNUSED] Option 2: Web application (when "frontend" + "backend" detected)
-backend/
-├── src/
-│   ├── models/
-│   ├── services/
-│   └── api/
-└── tests/
-
-frontend/
-├── src/
-│   ├── components/
-│   ├── pages/
-│   └── services/
-└── tests/
-
-# [REMOVE IF UNUSED] Option 3: Mobile + API (when "iOS/Android" detected)
-api/
-└── [same as backend above]
-
-ios/ or android/
-└── [platform-specific structure: feature modules, UI flows, platform tests]
+├── unit/
+├── contract/        # Evidence Payload and JSON output stability
+├── scenarios/       # end-to-end lab scenarios
+└── guardrails/      # imports, licensed views, SELECT-only, business tables
 ```
 
 **Structure Decision**: [Document the selected structure and reference the real

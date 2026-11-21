@@ -1,25 +1,37 @@
 ## Resumen
 
-## Fase relacionada
+## Spec relacionada
+
+<!-- specs/NNN-nombre y tareas cubiertas (T001-T0NN) -->
 
 ## Alcance implementado
 
 ## Fuera de alcance respetado
 
-## Validación contra documento rector
+## Cumplimiento constitucional
 
-- [ ] Leí y respeté `docs/DOCUMENTO_RECTOR.md`
-- [ ] Esta PR no convierte OraDiag en un health check
-- [ ] Esta PR no consulta tablas de negocio
-- [ ] Esta PR no implementa funcionalidades fuera de la fase
-- [ ] Esta PR mantiene la separación entre causa principal, factores contribuyentes, hallazgos relacionados e incidentales cuando aplica
-- [ ] Esta PR mantiene el principio de evidencia obligatoria
-- [ ] Esta PR considera manejo controlado de errores/timeouts cuando aplica
-- [ ] Esta PR actualiza documentación si corresponde
-- [ ] Esta PR actualiza roadmap/backlog/decision log si corresponde
+- [ ] RCA, no health check (I); sin causa sin evidencia (II); síntoma como pista (III)
+- [ ] Roles causales separados y OK relevantes visibles (IV, V)
+- [ ] Sin consultas a tablas de negocio; datos sensibles enmascarados (VII)
+- [ ] Errores y timeouts convertidos en limitaciones con motivo exacto (VIII)
+- [ ] Sin secretos en código, logs, reportes ni fixtures (IX)
+- [ ] Contrato de evidencia y salida JSON estables o versionados (X)
+- [ ] Núcleo sin dependencias de proveedores cloud ni SSH (XII)
+- [ ] Fuentes licenciadas solo en `sources/licensed/` y protegidas por licencia declarada (XIII)
+- [ ] Solo sentencias `SELECT`; nada que cambie estado (XIV)
+- [ ] Causa principal por correlación con la ventana, no por severidad (XV)
+- [ ] Vistas nuevas documentadas con su grant normal y su equivalente en RDS
 
 ## Pruebas
 
-## Riesgos o limitaciones
+<!-- Resultado de `uv run pytest -q` y pruebas nuevas -->
 
-## Notas para revisión
+## Documentación actualizada
+
+- [ ] `docs/` afectados
+- [ ] `docs/TRACEABILITY_MATRIX.md`
+- [ ] `docs/DECISION_LOG.md` / `docs/BACKLOG.md` si corresponde
+
+## Propuestas de desviación aceptadas
+
+## Riesgos o limitaciones

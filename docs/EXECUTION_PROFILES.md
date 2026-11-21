@@ -1,43 +1,40 @@
 # Perfiles de ejecución
 
-Los perfiles agrupan revisiones para distintos escenarios, pero no cambian las reglas RCA, la obligación de evidencia ni la prohibición de tablas de negocio.
+Los perfiles agrupan revisiones para distintos escenarios. No cambian las
+reglas RCA, la obligación de evidencia, las reglas de licenciamiento ni la
+prohibición de tablas de negocio. Un perfil puede incluir revisiones que
+requieran licencia o adaptador: si no están disponibles, quedan
+`not_evaluated` con la limitación correspondiente.
 
-## Perfiles iniciales
+## Perfiles
 
-```text
-diag_all
-diag_fast
-diag_connectivity
-diag_availability
-diag_waits
-diag_locks
-diag_storage
-diag_redo
-diag_user_access
-diag_infrastructure
-diag_rac
-diag_asm
-diag_multitenant
-diag_standby
-```
+| Perfil | Propósito | Fuentes | Spec |
+|---|---|---|---|
+| `diag_fast` | Incidente en curso: lo mínimo para orientar en segundos | Núcleo SQL | 005 |
+| `diag_all` | Revisión amplia dentro del alcance técnico | Todas las disponibles | 009 |
+| `diag_connectivity` | No se puede conectar o la conexión cuelga | Núcleo SQL + prueba de alcance de red desde el cliente | 004, 007 |
+| `diag_availability` | Base o instancia no disponible | Núcleo SQL; adaptador para eventos de plataforma | 004, 010 |
+| `diag_locks` | Bloqueos y contención | Núcleo SQL | 005 |
+| `diag_waits` | Lentitud por esperas | Núcleo SQL; ASH si hay licencia | 005, 006 |
+| `diag_past_incident` | Incidente ya ocurrido en una ventana declarada | ASH/AWR con licencia; adaptador de plataforma | 006, 010 |
+| `diag_user_access` | Cuentas, expiración, intentos fallidos | Núcleo SQL | 007 |
+| `diag_storage` | Espacio, TEMP, UNDO y FRA | Núcleo SQL; adaptador para el volumen | 008, 010 |
+| `diag_redo` | Redo, archive y log switches | Núcleo SQL | 008 |
+| `diag_infrastructure` | Host, red y plataforma gestionada | Adaptador de plataforma | 010 |
+| `diag_rac`, `diag_multitenant`, `diag_standby` | Topologías avanzadas | Núcleo SQL | 011 |
 
-## Descripción resumida
+ASM no tiene perfil propio en la plataforma inicial: en RDS no es visible. Se
+evaluará al incorporar on-premise.
 
-- `diag_all`: revisión amplia dentro del alcance técnico.
-- `diag_fast`: revisión rápida para incidentes activos.
-- `diag_connectivity`: capas de acceso y listener.
-- `diag_availability`: disponibilidad de instancia/base.
-- `diag_waits`: wait events y wait_class.
-- `diag_locks`: sesiones y bloqueos.
-- `diag_storage`: filesystem, FRA, TEMP y UNDO.
-- `diag_redo`: redo, archive y log switches.
-- `diag_user_access`: cuentas, passwords, intentos fallidos y auditoría técnica.
-- `diag_infrastructure`: red, DNS, listener y plataforma visible.
-- `diag_rac`, `diag_asm`, `diag_multitenant`, `diag_standby`: componentes avanzados futuros.
-
-## Ejemplos futuros
+## Ejemplos
 
 ```bash
-oradiag run --target prod_orcl_01 --profile diag_all --output console
-oradiag run --target prod_orcl_01 --profile diag_waits --output json
+# Incidente en curso
+oradiag run --target rds_core_01 --profile diag_fast --symptom slow_performance
+
+# Incidente pasado con ventana declarada (requiere fuentes con histórico)
+oradiag run --target rds_core_01 --profile diag_past_incident \
+  --since "2026-11-20 14:05" --until "2026-11-20 14:40" --output json
 ```
+
+La sintaxis exacta de la CLI se define en la spec 003.
