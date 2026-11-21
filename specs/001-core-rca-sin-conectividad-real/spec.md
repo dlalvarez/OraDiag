@@ -1,5 +1,8 @@
 # Feature Specification: Core RCA sin conectividad real
 
+> **Spec histórica.** Superseded por `003-modelo-de-evidencia-y-motor-causal` (constitución v2.0.0). No se implementa. Ver [REVISION.md](./REVISION.md) para lo que se conserva y lo que se descarta.
+
+
 **Feature Branch**: `001-core-rca-sin-conectividad-real`
 
 **Created**: 2026-07-03

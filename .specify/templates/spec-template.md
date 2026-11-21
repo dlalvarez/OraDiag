@@ -112,12 +112,32 @@
 
 ### Roadmap and Scope
 
-- **Roadmap grouping**: [000-008 grouping and phase(s)]
+- **Roadmap grouping**: [Spec 003-012 de `docs/ROADMAP.md`; 001 y 002 son históricas]
 - **Rector docs used**: [docs/... files that govern this feature]
-- **Out of scope**: [Explicitly state future phases and prohibited scope not
+- **Out of scope**: [Explicitly state future specs and prohibited scope not
   included]
 - **Deviation status**: [None, or `propuesta de desviación` with human
   authorization required]
+
+### Oracle Sources, Grants and Licensing
+
+<!--
+  Una fila por vista, paquete o fuente de plataforma que use la spec.
+  Licencia: none | diagnostic_pack | tuning_pack. Fuente: sql | licensed | platform | lab.
+  Validar la columna Licencia contra "Database Licensing Information" de cada versión soportada.
+-->
+
+| Vista / fuente | Fuente | Licencia | Grant normal | Grant en RDS | Versión mínima |
+|---|---|---|---|---|---|
+| [V$SESSION] | [sql] | [none] | [GRANT SELECT ON V_$SESSION TO oradiag] | [EXEC rdsadmin.rdsadmin_util.grant_sys_object('V_$SESSION','ORADIAG','SELECT')] | [19c] |
+
+- **Read-only**: [Confirm only SELECT; no DML/DDL, ALTER SYSTEM, server files or
+  state-changing procedures]
+- **Platform independence**: [Confirm core sources are SQL-only; list any
+  platform adapter used and what becomes `not_evaluated` without it]
+- **Licensed sources**: [None, or list with `diagnostic_pack`/`tuning_pack`
+  declaration and `control_management_pack_access` check]
+- **Query cost**: [Time window and filters that bound each query in production]
 
 ### RCA and Evidence Rules
 
@@ -126,6 +146,8 @@
 - **Evidence required**: [Positive evidence, negative evidence and limitations]
 - **Symptom handling**: [How symptoms prioritize but do not decide causality]
 - **Causal roles**: [Which roles can be emitted and under what evidence]
+- **Causal correlation**: [Causal rules or evidence chains; how the incident
+  window decides primary vs incidental; never by severity alone]
 - **Visible OK reviews**: [OK results that must remain visible]
 - **Causal domains**: [Approved domains used; explain Datos boundary if
   applicable]
@@ -133,7 +155,8 @@
 ### Safety, Data and Error Boundaries
 
 - **No business data**: [Confirm no business tables, functional data or
-  application-data meaning are queried, modeled or inferred]
+  application-data meaning are queried, modeled or inferred; SQL text and bind
+  values treated as sensitive and masked in reports]
 - **Failures/timeouts**: [How errors, timeouts, missing permissions and missing
   layers become limitations or non-evaluated reviews]
 - **Security/minimum privileges**: [Secrets handling and minimum technical

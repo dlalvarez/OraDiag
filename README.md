@@ -1,42 +1,60 @@
 # OraDiag
 
-OraDiag (también referido como OraRCA en discusiones iniciales) es un framework Python para diagnóstico y análisis de causa raíz (RCA) asistido de incidentes Oracle. Su propósito es ayudar a investigar problemas ya reportados o en curso, encontrar una causa probable soportada por evidencia técnica y entregar recomendaciones seguras.
+OraDiag es un framework Python para diagnóstico y análisis de causa raíz (RCA)
+asistido de incidentes Oracle. Ayuda a investigar problemas ya reportados o en
+curso, encontrar una causa probable soportada por evidencia técnica y entregar
+recomendaciones seguras.
 
 ## Qué problema resuelve
 
-OraDiag busca reducir la ambigüedad durante incidentes Oracle mediante una investigación ordenada por capas: sistema operativo, infraestructura, listener, logs, catálogo, diccionario, vistas dinámicas, sesiones, bloqueos, waits, redo, almacenamiento y componentes Oracle bajo alcance. La salida esperada no será una lista indiscriminada de anomalías, sino una conclusión RCA con causa probable, factores contribuyentes, hallazgos relacionados, hallazgos incidentales, revisiones descartadas y revisiones no evaluadas.
+Durante un incidente, OraDiag recolecta evidencia técnica de solo lectura,
+la ancla a la ventana del incidente y la correlaciona para producir una
+conclusión RCA: causa probable con su cadena de evidencia, factores
+contribuyentes, hallazgos relacionados e incidentales, hipótesis descartadas y
+lo que no pudo evaluarse, con un nivel de confianza explicado.
 
-## Qué no es OraDiag
+## Qué no es
 
-- No es un health check general.
+- No es un health check general (eso es OraHealth).
 - No es una herramienta de capacity planning.
-- No es un caza-problemas que reporte todo lo extraño sin relación causal.
-- No investiga datos funcionales ni consulta tablas de negocio.
-- No reemplaza al análisis funcional, de aplicación o de datos fuera del alcance técnico.
+- No es un buscador de anomalías sin relación causal.
+- No consulta tablas de negocio ni investiga datos funcionales.
+- No ejecuta acciones correctivas: solo las recomienda.
 
-## Diferencia frente a OraHealth y OraCapacity
+## Cómo obtiene evidencia
 
-- **OraHealth**: orientado a estado general y cumplimiento de salud operativa.
-- **OraCapacity**: orientado a tendencias, capacidad y planificación futura.
-- **OraDiag**: orientado a RCA de incidentes específicos ya ocurridos o reportados, priorizando evidencia concreta y causalidad probable.
+- **Núcleo SQL (obligatorio)**: consultas de solo lectura contra la instancia.
+  Funciona igual en Amazon RDS for Oracle, on-premise y OCI.
+- **Fuentes licenciadas (opcionales)**: ASH y AWR, solo con licencia de
+  Diagnostics Pack declarada.
+- **Adaptadores de plataforma (opcionales)**: métricas, eventos y logs de AWS
+  RDS, SSH on-premise u OCI.
 
-## Estado inicial del proyecto
+Plataforma inicial: Amazon RDS for Oracle Enterprise Edition.
 
-La Fase 0 es exclusivamente documental. Este repositorio queda preparado para fases futuras, pero no contiene CLI real, conectores, collectors, checks, consultas SQL, motor RCA funcional, reportes reales ni histórico SQLite.
-
-## Principios rectores
+## Principios
 
 1. La evidencia manda sobre el síntoma.
-2. El síntoma es una pista opcional, nunca una verdad diagnóstica.
-3. Toda conclusión relevante debe tener evidencia o declarar sus limitaciones.
-4. Los errores, timeouts y fallas parciales deben producir diagnóstico parcial, no crashes no controlados.
-5. Las revisiones OK también son importantes porque descartan hipótesis.
-6. Se debe diferenciar causa principal, factores contribuyentes, hallazgos relacionados e incidentales.
-7. No se consultan tablas de negocio.
-8. Las recomendaciones deben ser seguras, explícitas y proporcionales a la evidencia.
+2. La causa sale de una cadena de evidencia correlacionada con la ventana del
+   incidente, no de la severidad de los hallazgos.
+3. Errores, timeouts y permisos insuficientes producen diagnóstico parcial,
+   nunca un cuelgue.
+4. Las revisiones OK importan: descartan hipótesis.
+5. Solo lectura estricta y mínimos privilegios.
+6. Los packs de Oracle solo se usan con licencia declarada.
+7. El núcleo depende solo de Oracle; las plataformas son adaptadores.
 
-## Roadmap resumido
+## Estado
 
-El proyecto avanzará desde gobierno documental, CLI y modelos base, conectividad por capas, discovery Oracle, alert log, usuario/autenticación, sesiones/bloqueos, wait analysis, storage, redo, correlación RCA, reportes, componentes avanzados RAC/ASM/Multitenant/Standby, histórico de incidentes y extensiones futuras.
+Replanteamiento en curso en la rama `develop-claude`: constitución v2.0.0 y
+documentación rectora actualizadas; siguiente paso, la planeación de la spec
+`003-modelo-de-evidencia-y-motor-causal`. El código existente en `src/` y
+`tests/` pertenece a una implementación anterior y será retirado.
 
-Consulte `docs/ROADMAP.md` para el detalle formal por fase.
+## Documentación
+
+- Constitución: `.specify/memory/constitution.md`
+- Guía para Claude Code: `CLAUDE.md`
+- Roadmap: `docs/ROADMAP.md`
+- Arquitectura: `docs/ARCHITECTURE.md`
+- Decisiones: `docs/DECISION_LOG.md`
